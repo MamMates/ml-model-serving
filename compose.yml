@@ -1,0 +1,11 @@
+services:
+  app:
+    image: putuwaw/mammates-model-serving
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ml-clf
+  ml-clf:
+    image: putuwaw/mammates-food-classification
+    ports:
+      - "8501:8501"
