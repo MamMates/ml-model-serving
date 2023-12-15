@@ -3,9 +3,31 @@ services:
     image: putuwaw/mammates-model-serving
     ports:
       - "8080:8080"
+    volumes:
+      - model_price:/app/model
     depends_on:
       - ml-clf
+      - ml-rating
+      - ml-price
   ml-clf:
     image: putuwaw/mammates-food-classification
     ports:
       - "8501:8501"
+  ml-rating:
+    image: putuwaw/mammates-food-rating
+    ports:
+      - "8502:8502"
+    depends_on:
+      - ml-clf
+  ml-price:
+    image: putuwaw/mammates-food-price
+    ports:
+      - "8503:8503"
+    volumes:
+      - model_price:/models/food_price/1
+    depends_on:
+      - ml-clf
+      - ml-rating
+
+volumes:
+  model_price:
