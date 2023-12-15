@@ -80,6 +80,6 @@ def normalize_data(data: np.ndarray) -> np.ndarray:
     """
     Normalize data using min-max scaler
     """
-    scaler = joblib.load(os.path.join(os.getcwd(), 'model', 'scaler.pkl'))
+    scaler = joblib.load('app/scaler.pkl')
     scaled_data = scaler.transform(data)
     return scaled_data
