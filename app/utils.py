@@ -16,12 +16,12 @@ def get_price_data(
     """
     logging.basicConfig(level=logging.INFO)
 
-    cwd = os.getcwd()
-    dataset_path = os.path.join(cwd, 'model')
+    # cwd = os.getcwd()
+    # dataset_path = os.path.join(cwd, 'model')
+    dataset_link = "https://docs.google.com/spreadsheets/d/1e_aUUmqyBmFP15BlJCKY-MHv5YFRTRROBEjk1ArDT84"
 
     logging.info("Getting salary from province")
-    df_salary = pd.read_csv(os.path.join(
-        dataset_path, 'MamMates Price Dataset - Province.csv'), index_col='id')
+    df_salary = pd.read_csv(f'{dataset_link}/export?gid=261629379&format=csv')
     df_salary['salary'] = df_salary['salary'].replace('[^\d]', '', regex=True)
     df_salary['salary'] = df_salary['salary'].astype(np.float32)
     filtered_salary = df_salary[df_salary['province'].str.contains(
@@ -35,8 +35,8 @@ def get_price_data(
 
     logging.info(f"Salary: {salary}")
     logging.info("Getting environment data")
-    df_env = pd.read_csv(os.path.join(
-        dataset_path, 'MamMates Price Dataset - Environment.csv'), index_col='id')
+    df_env = pd.read_csv(
+        f'{dataset_link}/export?gid=533543368&format=csv', index_col='id')
 
     filtered_env = df_env[df_env['name'].str.contains(environment, case=False)]
 
