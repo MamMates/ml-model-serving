@@ -11,6 +11,8 @@ RUN pip install -r requirements.txt
 EXPOSE 8080
 
 ENV CLF_ENDPOINT=http://ml-clf:8501/v1/models/food_clf:predict
+ENV RATING_ENDPOINT=http://ml-rating:8502/v1/models/food_rating:predict
+ENV PRICE_ENDPOINT=http://ml-price:8503/v1/models/food_price:predict
 
 COPY . . 
 
