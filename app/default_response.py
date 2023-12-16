@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Predict(BaseModel):
@@ -8,19 +8,19 @@ class Predict(BaseModel):
 
 
 class GlobalResponse(BaseModel):
+    model_config = ConfigDict(extra='allow')
     status: bool = None
     code: int = None
     message: str = None
-    data: dict = None
 
-    def DefaultOK(data: dict = {}):
-        return GlobalResponse(status=True, code=200, message="OK", data=data)
+    def DefaultOK(**kwargs):
+        return GlobalResponse(status=True, code=200, message="OK", **kwargs)
 
-    def DefaultBadRequest():
-        return GlobalResponse(status=False, code=400, message="Bad Request", data={})
+    def DefaultBadRequest(**kwargs):
+        return GlobalResponse(status=False, code=400, message="Bad Request", **kwargs)
 
-    def DefaultNotFound():
-        return GlobalResponse(status=False, code=404, message="Not Found", data={})
+    def DefaultNotFound(**kwargs):
+        return GlobalResponse(status=False, code=404, message="Not Found", **kwargs)
 
-    def DefaultInternalServerError():
-        return GlobalResponse(status=False, code=500, message="Internal Server Error", data={})
+    def DefaultInternalServerError(**kwargs):
+        return GlobalResponse(status=False, code=500, message="Internal Server Error", **kwargs)
