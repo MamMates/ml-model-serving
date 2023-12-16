@@ -2,7 +2,14 @@ import pandas as pd
 import numpy as np
 import logging
 import joblib
-import os
+
+
+formatter = logging.Formatter('%(levelname)-10s%(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def get_price_data(
@@ -14,14 +21,12 @@ def get_price_data(
     """
     Prepare data for prediction
     """
-    logging.basicConfig(level=logging.INFO)
 
-    # cwd = os.getcwd()
-    # dataset_path = os.path.join(cwd, 'model')
-    dataset_link = "https://docs.google.com/spreadsheets/d/1e_aUUmqyBmFP15BlJCKY-MHv5YFRTRROBEjk1ArDT84"
+    DATASET_PATH = "app/data"
 
-    logging.info("Getting salary from province")
-    df_salary = pd.read_csv(f'{dataset_link}/export?gid=533543368&format=csv')
+    logger.info("Getting salary from province")
+    df_salary = pd.read_csv(
+        f"{DATASET_PATH}/MamMates Price Dataset - Province.csv", index_col="id")
     df_salary['salary'] = df_salary['salary'].replace('[^\d]', '', regex=True)
     df_salary['salary'] = df_salary['salary'].astype(np.float32)
     filtered_salary = df_salary[df_salary['province'].str.contains(
@@ -30,22 +35,23 @@ def get_price_data(
     if not filtered_salary.empty:
         salary = filtered_salary['salary'].mean()
     else:
-        logging.warning(f"Province {province} not found, using default value")
+        logger.warning(f"Province {province} not found, using default value")
         salary = df_salary['salary'].mean()
+    logger.info(f"Salary: {salary}")
 
-    logging.info(f"Salary: {salary}")
-    logging.info("Getting environment data")
+    logger.info("Getting environment data")
     df_env = pd.read_csv(
-        f'{dataset_link}/export?gid=159074004&format=csv', index_col='id')
+        f"{DATASET_PATH}/MamMates Price Dataset - Environment.csv", index_col='id')
 
     filtered_env = df_env[df_env['name'].str.contains(environment, case=False)]
 
     if not filtered_env.empty:
         env = filtered_env.index.values[0]
     else:
+        logger.warning(
+            f"Environment {environment} not found, using default value")
         env = 3
-
-    logging.info(f"Environment: {env}")
+    logger.info(f"Environment: {env}")
 
     food_list = ['tawar', 'keju', 'cokelat', 'bakar',
                  'kukus', 'roti', 'srikaya', 'panggang']
@@ -80,6 +86,6 @@ def normalize_data(data: np.ndarray) -> np.ndarray:
     """
     Normalize data using min-max scaler
     """
-    scaler = joblib.load('app/scaler.pkl')
+    scaler = joblib.load('app/data/scaler.pkl')
     scaled_data = scaler.transform(data)
     return scaled_data
