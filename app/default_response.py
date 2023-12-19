@@ -7,6 +7,15 @@ class Predict(BaseModel):
     price: int = None
 
 
+class Recommendation(BaseModel):
+    food_id: list[int] = None
+
+
+class Model(BaseModel):
+    status: dict = None
+    metadata: dict = None
+
+
 class GlobalResponse(BaseModel):
     model_config = ConfigDict(extra='allow')
     status: bool = None
