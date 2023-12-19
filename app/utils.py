@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import logging
 import joblib
+import os
 
 
 formatter = logging.Formatter('%(levelname)-10s%(message)s')
@@ -89,3 +90,22 @@ def normalize_data(data: np.ndarray) -> np.ndarray:
     scaler = joblib.load('app/data/scaler.pkl')
     scaled_data = scaler.transform(data)
     return scaled_data
+
+
+def get_model_endpoint(name: str, method: str | None = None) -> str:
+    env_type = os.getenv("ENVIRONMENT_TYPE")
+
+    list_model_name = ["food_clf", "food_rating", "food_price", "food_rec"]
+    list_model_service = ["ml-clf", "ml-rating", "ml-price", "ml-rec"]
+
+    idx = list_model_name.index(name)
+    init_port = 8501
+    if env_type == "development":
+        host = list_model_service[idx]
+    elif env_type == "production":
+        host = "localhost"
+
+    model_url = f"http://{host}:{init_port+idx}/v1/models/{name}"
+    if method == "predict":
+        return f"{model_url}:predict"
+    return model_url
