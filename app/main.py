@@ -1,13 +1,12 @@
+from .default_response import GlobalResponse, Predict, Recommendation, Model
+from .utils import get_price_data, get_model_endpoint
 from fastapi import FastAPI, UploadFile, Response
-from .default_response import GlobalResponse, Predict
-from .utils import get_price_data
 from dotenv import load_dotenv
 import numpy as np
 import traceback
 import httpx
 import json
 import cv2
-import os
 
 
 load_dotenv()
@@ -22,6 +21,83 @@ async def root() -> Response:
         content=r.model_dump_json(),
         media_type="application/json"
     )
+
+
+@app.get("/recommendation")
+async def recommendation(user_id: int) -> Response:
+    try:
+        rec_url = get_model_endpoint("food_rec", method="predict")
+        user_id = str(user_id)
+
+        r = GlobalResponse.DefaultOK(data={})
+        rec = Recommendation()
+
+        data = json.dumps({"instances": [user_id]})
+        response = httpx.post(
+            rec_url,
+            data=data,
+            headers={"content-type": "application/json"}
+        )
+        predictions = json.loads(response.text)
+        str_food_ids = predictions['predictions'][0]['output_2']
+        food_ids = [int(i) for i in str_food_ids]
+        rec.food_id = food_ids[:5]
+
+        r.data = rec.model_dump()
+        return Response(
+            status_code=r.code,
+            content=r.model_dump_json(),
+            media_type="application/json"
+        )
+    except BaseException:
+        error = traceback.format_exc()
+        r = GlobalResponse.DefaultBadRequest(error=error)
+        return Response(
+            status_code=r.code,
+            content=r.model_dump_json(),
+            media_type="application/json"
+        )
+
+
+@app.get("/model/{model_name}")
+async def model(model_name: str) -> Response:
+    try:
+        list_model_name = ["food_clf", "food_rating", "food_price", "food_rec"]
+        if model_name not in list_model_name:
+            r = GlobalResponse.DefaultBadRequest(
+                error=f"Model {model_name} not found")
+            return Response(
+                status_code=r.code,
+                content=r.model_dump_json(),
+                media_type="application/json"
+            )
+        r = GlobalResponse.DefaultOK(data={})
+        m = Model()
+
+        model_url = get_model_endpoint(model_name)
+
+        response = httpx.get(model_url)
+        status = json.loads(response.text)
+        m.status = status
+
+        response = httpx.get(f"{model_url}/metadata")
+        metadata = json.loads(response.text)
+        m.metadata = metadata
+
+        r.data = m.model_dump()
+        return Response(
+            status_code=r.code,
+            content=r.model_dump_json(),
+            media_type="application/json"
+        )
+    except BaseException:
+        error = traceback.format_exc()
+        r = GlobalResponse.DefaultBadRequest(error=error)
+        return Response(
+            status_code=r.code,
+            content=r.model_dump_json(),
+            media_type="application/json"
+        )
 
 
 @app.post("/predict")
@@ -64,9 +140,9 @@ async def predict(
         r = GlobalResponse.DefaultOK(data={})
         p = Predict()
 
-        clf_url = os.getenv("CLF_ENDPOINT")
-        rating_url = os.getenv("RATING_ENDPOINT")
-        price_url = os.getenv("PRICE_ENDPOINT")
+        clf_url = get_model_endpoint("food_clf", method="predict")
+        rating_url = get_model_endpoint("food_rating", method="predict")
+        price_url = get_model_endpoint("food_price", method="predict")
 
         input_img = json.dumps({"instances": [image.tolist()]})
 
