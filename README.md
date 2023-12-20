@@ -7,21 +7,35 @@
 ![Docker Version](https://img.shields.io/docker/v/putuwaw/mammates-model-serving/latest?style=for-the-badge)
 ![Docker Pulls](https://img.shields.io/docker/pulls/putuwaw/mammates-model-serving?style=for-the-badge)
 
-Serving Services for All ML Model
+Serving Services for All ML Model using FastAPI and Docker.
+
+## ML Model 🤖
+
+Here is the list of ML Model that we use in this project:
+
+- [Food Classification](https://github.com/MamMates/ml-food-classification)
+- [Food Rating](https://github.com/MamMates/ml-food-rating)
+- [Food Price](https://github.com/MamMates/ml-food-price)
+- [Food Recommendation](https://github.com/MamMates/ml-food-recommendation)
 
 ## Features 💡
 
-Using ML Model Serving, you can get prediction from our ML Model for predicting food category, rating, and price.
+Using ML Model Serving, you can:
+
+- [x] Get prediction from our ML model for predicting food category, rating, and price.
+- [x] Get food recommendation from our ML model by given `user_id`.
+- [x] Get status and metadata from our ML model.
 
 ## Prerequisites 📋
 
-- Python 3.10 or higher
-- Docker 24.0.7 or higher
-- Docker Compose v2.15.1 or higher
+- [Python](https://www.python.org/) 3.10 or higher
+- [FastAPI](https://fastapi.tiangolo.com/) 0.104.1 or higher
+- [Docker](https://www.docker.com/) 24.0.7 or higher
+- [Docker Compose](https://docs.docker.com/compose/) 2.15.1 or higher
 
-## Usage 🛠
+## Usage ✨
 
-Actually, if you already have Docker and Docker Compose, you just need the `compose.yml` file.
+Actually, if you already have Docker and Docker Compose, you just need the [compose.yml](compose.yml) file.
 
 - You can run this app with Docker Compose.
 
@@ -30,11 +44,11 @@ docker compose up
 ```
 
 - Now, you can access the app on http://localhost:8080
-- For doing prediction, please read the [API Endpoints](#api-endpoints-📡) section.
+- For doing prediction or get food recommendation, please read the [API Endpoints](#api-endpoints-) section.
 
-## Development 🛠
+## Development 💻
 
-If you want to develop the model serving, you can follow this step.
+If you want to develop the model serving, you can follow this step:
 
 - Clone the repository:
 
@@ -57,7 +71,7 @@ pip install -r requirements.txt
 
 - To develop the FastAPI services, you can modify the `compose.yml` file, change the `image` in `app` services to `build`:
 
-```bash
+```diff
 - image: putuwaw/mammates-model-serving
 + build: .
 ```
@@ -82,9 +96,9 @@ List of available endpoints:
 
 ### GET
 
-`GET /` - Get hello world.
-
-**Response**
+<details>
+  <summary><code>GET /</code> - Get hello world.</summary><br>
+  <b>Response</b>
 
 ```json
 {
@@ -97,16 +111,156 @@ List of available endpoints:
 }
 ```
 
+</details>
+
+<details>
+  <summary>
+  <code>GET /recommendation</code> - Get food recommendation (top 5).</summary><br>
+
+| Name      | Params | Required     | Type      | Description                  |
+| --------- | ------ | ------------ | --------- | ---------------------------- |
+| `user_id` | Query  | **required** | `integer` | The id of user. Example `14` |
+
+**Response**
+
+```json
+{
+  "status": true,
+  "code": 200,
+  "message": "OK",
+  "data": {
+    "food_id": [13, 14, 12, 2, 18]
+  }
+}
+```
+
+</details>
+
+</details>
+
+<details>
+  <summary>
+  <code>GET /model/{model_name}</code> - Get status and metadata from model.</summary><br>
+
+| Name         | Params | Required     | Type     | Description                           |
+| ------------ | ------ | ------------ | -------- | ------------------------------------- |
+| `model_name` | Path   | **required** | `string` | The name of model. Example `food_clf` |
+
+**Response**
+
+```json
+{
+  "status": true,
+  "code": 200,
+  "message": "OK",
+  "data": {
+    "status": {
+      "model_version_status": [
+        {
+          "version": "1",
+          "state": "AVAILABLE",
+          "status": {
+            "error_code": "OK",
+            "error_message": ""
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "model_spec": {
+        "name": "food_clf",
+        "signature_name": "",
+        "version": "1"
+      },
+      "metadata": {
+        "signature_def": {
+          "signature_def": {
+            "serving_default": {
+              "inputs": {
+                "input_2": {
+                  "dtype": "DT_FLOAT",
+                  "tensor_shape": {
+                    "dim": [
+                      {
+                        "size": "-1",
+                        "name": ""
+                      },
+                      {
+                        "size": "150",
+                        "name": ""
+                      },
+                      {
+                        "size": "150",
+                        "name": ""
+                      },
+                      {
+                        "size": "3",
+                        "name": ""
+                      }
+                    ],
+                    "unknown_rank": false
+                  },
+                  "name": "serving_default_input_2:0"
+                }
+              },
+              "outputs": {
+                "dense": {
+                  "dtype": "DT_FLOAT",
+                  "tensor_shape": {
+                    "dim": [
+                      {
+                        "size": "-1",
+                        "name": ""
+                      },
+                      {
+                        "size": "10",
+                        "name": ""
+                      }
+                    ],
+                    "unknown_rank": false
+                  },
+                  "name": "StatefulPartitionedCall:0"
+                }
+              },
+              "method_name": "tensorflow/serving/predict",
+              "defaults": {}
+            },
+            "__saved_model_init_op": {
+              "inputs": {},
+              "outputs": {
+                "__saved_model_init_op": {
+                  "dtype": "DT_INVALID",
+                  "tensor_shape": {
+                    "dim": [],
+                    "unknown_rank": true
+                  },
+                  "name": "NoOp"
+                }
+              },
+              "method_name": "",
+              "defaults": {}
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+</details>
+
 ### POST
 
-`POST /predict` - Predict category, rating, and price of image.
+<details>
+  <summary><code>POST /predict</code> - Predict category, rating, and price of image.</summary><br>
 
-| Name          | Params | Required     | Type     | Description               |
-| ------------- | ------ | ------------ | -------- | ------------------------- |
-| `province`    | Query  | **required** | `string` | The province of seller    |
-| `environment` | Query  | optional     | `string` | The environment of seller |
-| `name`        | Query  | optional     | `string` | The name of food          |
-| `image`       | Body   | **required** | `file`   | The image to predict      |
+| Name          | Params | Required     | Type     | Description                                                 |
+| ------------- | ------ | ------------ | -------- | ----------------------------------------------------------- |
+| `province`    | Query  | **required** | `string` | The province of seller. Example `Bali`                      |
+| `environment` | Query  | optional     | `string` | The environment of seller. Default `campus`.                |
+| `name`        | Query  | optional     | `string` | The name of food. Default `null`. Example `donat ubi mawar` |
+| `image`       | Body   | **required** | `file`   | The image to predict                                        |
 
 **Response**
 
@@ -122,6 +276,8 @@ List of available endpoints:
   }
 }
 ```
+
+</details>
 
 ## License 📝
 
