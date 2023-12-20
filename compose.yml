@@ -7,6 +7,7 @@ services:
       - ml-clf
       - ml-rating
       - ml-price
+      - ml-rec
   ml-clf:
     image: putuwaw/mammates-food-classification
     ports:
@@ -24,3 +25,11 @@ services:
     depends_on:
       - ml-clf
       - ml-rating
+  ml-rec:
+    image: putuwaw/mammates-food-recommendation
+    ports:
+      - "8504:8504"
+    depends_on:
+      - ml-clf
+      - ml-rating
+      - ml-price
