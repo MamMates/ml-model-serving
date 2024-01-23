@@ -42,7 +42,7 @@ tomli==2.0.1
 typing_extensions==4.9.0
 tzdata==2023.3
 ujson==5.8.0
-uvicorn==0.24.0.post1
+uvicorn==0.27.0
 uvloop==0.19.0
 watchfiles==0.21.0
 websockets==12.0
